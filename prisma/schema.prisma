@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  BACKLOG     @map("Backlog")
+  IN_PROGRESS @map("In Progress")
+  PAUSED      @map("Paused")
+  DONE        @map("Done")
+}
+
+model User {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  oauthId        String    @unique @map("oauth_id")
+  email          String    @unique
+  name           String
+  profilePicture String?   @map("profile_picture")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  
+  ownedProjects  Project[] @relation("ProjectOwner")
+
+  @@map("users")
+}
+
+// Embedded type structure to parse raw front-end allocation payloads safely
+type EmbeddedMember {
+  name   String
+  avatar String?
+}
+
+model Project {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  company      String?
+  logoColor    String           @default("bg-blue-600") @map("logo_color")
+  status       ProjectStatus    @default(BACKLOG)
+  summaryTitle String?          @map("summary_title")
+  summaryDesc  String?          @map("summary_desc")
+  progress     Int              @default(0)
+  extraMembers Int              @default(0) @map("extra_members")
+  isArchived   Boolean          @default(false) @map("is_archived")
+  ownerId      String?          @map("owner_id") @db.ObjectId
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  owner        User?            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  
+  // Re-architected field to receive native array streams matching UI state structures
+  members      EmbeddedMember[]
+
+  @@map("projects")
+}
