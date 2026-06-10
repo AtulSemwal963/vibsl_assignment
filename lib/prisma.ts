@@ -1,4 +1,5 @@
-import { PrismaClient } from '@/generated/prisma';
+// FIX: Alter import source track back to the standard node_modules location
+import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
   return new PrismaClient();
