@@ -50,7 +50,7 @@ export default function Dashboard() {
       
       {/* Welcome Interface Header */}
       <div>
-        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-tight">Welcome back, Jone</h1>
+        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-tight">Welcome back</h1>
         <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5 leading-relaxed">
           Operational state validation mapping: 200 OK. Infrastructure systems fully operational.
         </p>

@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VIBsl Assignment Project Workspace
+
+A comprehensive project management and assignment submission dashboard interface tracking workflow allocations and administrative status states.
+
+---
+
+## Technical Stack Architecture
+
+* **Framework:** Next.js 15.1.0 (App Router Paradigm)
+* **Database Engine:** MongoDB via Prisma ORM 6.19.3
+* **State Management:** Zustand 5.0.3
+* **Style Engine:** Tailwind CSS 4.0.0 with PostCSS 4.0.0
+* **Development Paradigm:** TypeScript 5.7.2
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Repository Instantiation
+
+Clone the project assets to your local machine storage volume:
+
+```bash
+git clone https://github.com/your-username/vibsl-assignment.git
+cd vibsl-assignment
+
+```
+
+### 2. Dependency Resolution
+
+Install the unified module manifest tracking definitions matching the version constraints locked in your engine registry:
+
+```bash
+npm install
+
+```
+
+### 3. Environment Variable Provisioning
+
+Create a `.env` configuration file inside your project root directory:
+
+```bash
+touch .env
+
+```
+
+Open the file and map your specific connection parameter string matching your MongoDB cluster instance target:
+
+```env
+DATABASE_URL="mongodb+srv://<username>:<password>@<cluster>.<id>.mongodb.net/<database_name>?retryWrites=true&w=majority"
+
+```
+
+### 4. Database Client Compilation
+
+Compile your declarative object relational definitions inside `prisma/schema.prisma` directly into your native node modules runtime path:
+
+```bash
+npx prisma generate
+
+```
+
+### 5. Local Runtime Execution
+
+Fire up the local optimization development compiler engine server layer:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) inside your web browser engine interface view.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Production Compilation and Deployment Pipelines
 
-## Learn More
+### Local Build Simulation
 
-To learn more about Next.js, take a look at the following resources:
+To execute a local simulation pass to guarantee the type checker loops complete successfully without dropping runtime structures:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
+### Serverless Vercel Architecture Engine Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+When establishing your automated production pipeline tracker on Vercel, guarantee these deployment infrastructure configuration properties are met:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* **Environment Key Mapping:** Add your active `DATABASE_URL` runtime identifier mapping explicitly inside your project configuration settings page.
+* **Build Settings:** Ensure custom overrides are switched off. The project repository engine will execute natively using your structured manifest command sequence configured inside `package.json`:
+
+```bash
+prisma generate && next build
+
+```
