@@ -114,7 +114,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       
       const responseData = await res.json();
       
-      // If the backend returns a saved record schema instance (e.g., MongoDB updates), merge it back locally
+      // FIX: Map using finalProject.id reference so the temporary numerical ID is replaced with the MongoDB String ID
       if (responseData && responseData.project) {
         const structuralSavedProject = responseData.project;
         set((state) => ({

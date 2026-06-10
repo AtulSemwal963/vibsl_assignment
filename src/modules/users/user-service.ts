@@ -1,5 +1,4 @@
 import { userQueries } from './user-queries';
-import { cookies } from 'next/headers';
 
 export const userService = {
   async processGoogleOAuthCallback(authorizationCode: string) {
@@ -34,24 +33,12 @@ export const userService = {
     const googleProfile = await profileResponse.json();
 
     // 3. Persist profile schema matching database criteria via Upsert pipeline
-    const user = await userQueries.upsertGoogleUser({
-      oauthId: googleProfile.sub, // Unique invariant identifier signature
+    // Pure data transaction returned transparently to handler boundary layers
+    return userQueries.upsertGoogleUser({
+      oauthId: googleProfile.sub, 
       email: googleProfile.email,
       name: googleProfile.name,
       profilePicture: googleProfile.picture,
     });
-
-    // 4. Secure cryptographic state configuration (JWT representation omitted for structure clarity)
-    // Persists stateless HTTP-Only authentication cookie matching session infrastructure requirements
-    const cookieStore = await cookies();
-    cookieStore.set('session_token', user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7-day storage lifecycle limit
-    });
-
-    return user;
   },
 };

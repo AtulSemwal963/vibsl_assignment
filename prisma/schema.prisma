@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  engineType    = "library"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -52,14 +52,16 @@ model Project {
   progress     Int              @default(0)
   extraMembers Int              @default(0) @map("extra_members")
   isArchived   Boolean          @default(false) @map("is_archived")
-  ownerId      String?          @map("owner_id") @db.ObjectId
   createdAt    DateTime         @default(now()) @map("created_at")
   updatedAt    DateTime         @updatedAt @map("updated_at")
 
-  owner        User?            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  // FIX: Force required relation to prevent unowned/global data leaks
+  ownerId      String           @map("owner_id") @db.ObjectId
+  owner        User             @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   
   // Re-architected field to receive native array streams matching UI state structures
   members      EmbeddedMember[]
 
+  @@index([ownerId]) // Optimizes query performance for tenant-isolated fetches
   @@map("projects")
 }

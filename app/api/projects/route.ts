@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { ProjectStatus, type Project } from '@prisma/client';
-// FIX: Import the optimized global singleton client instance
+import { ProjectStatus } from '@prisma/client';
 import prisma from '@/lib/prisma'; 
+import { cookies } from 'next/headers';
 
 function mapStatusToEnum(status: string): ProjectStatus {
   switch (status) {
@@ -12,12 +12,31 @@ function mapStatusToEnum(status: string): ProjectStatus {
   }
 }
 
+// HELPER: Extract internal MongoDB User._id string from session/cookie context
+async function getAuthenticatedUserId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  // FIX: Align identifier extraction with the active 'session_token' key found in user/me route
+  const userId = cookieStore.get('session_token')?.value; 
+  return userId || null;
+}
+
 export async function GET() {
   try {
+    const userId = await getAuthenticatedUserId();
+    
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized access blocked" }, { status: 401 });
+    }
+
+    // FIX: Restrict lookups exclusively to the authenticated project owner
     const projects = await prisma.project.findMany({
-      where: { isArchived: false },
+      where: { 
+        ownerId: userId,
+        isArchived: false 
+      },
       orderBy: { createdAt: 'desc' }
     });
+    
     return NextResponse.json({ projects });
   } catch (err: any) {
     console.error("Collection read pipeline failure:", err);
@@ -27,6 +46,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const userId = await getAuthenticatedUserId();
+    
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized operation blocked" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { 
       name, 
@@ -40,8 +65,10 @@ export async function POST(req: Request) {
       extraMembers 
     } = body;
 
+    // FIX: Enforce mandatory ownerId mapping on creation payload
     const newProject = await prisma.project.create({
       data: {
+        ownerId: userId, 
         name: name || "Untitled Scope Initialization",
         company,
         logoColor: logoColor || "bg-blue-600",

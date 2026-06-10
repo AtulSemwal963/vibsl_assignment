@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { ProjectStatus, type Project } from '@prisma/client';
-// FIX: Import the optimized global singleton client instance
-import prisma from '@/lib/prisma'; 
+import { ProjectStatus } from '@prisma/client';
+import prisma from '@/lib/prisma';
+import { cookies } from 'next/headers';
 
 function mapStatusToEnum(status: string): ProjectStatus {
   switch (status) {
@@ -12,30 +12,52 @@ function mapStatusToEnum(status: string): ProjectStatus {
   }
 }
 
+async function getAuthenticatedUserId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('userId')?.value;
+  return userId || null;
+}
+
+// 1. PATCH: Update a specific project safely within user boundaries
 export async function PATCH(
-  req: Request, 
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const body = await req.json();
-    const { id } = await params;
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized access blocked" }, { status: 401 });
+    }
 
-    const { 
-      name, 
-      company, 
-      status, 
-      summaryTitle, 
-      summaryDesc, 
-      progress, 
-      members, 
-      extraMembers 
+    const { id } = await params;
+    const body = await req.json();
+    const {
+      name,
+      company,
+      logoColor,
+      status,
+      summaryTitle,
+      summaryDesc,
+      progress,
+      members,
+      extraMembers
     } = body;
+
+    // Verify ownership BEFORE executing any structural changes
+    const existingProject = await prisma.project.findFirst({
+      where: { id, ownerId: userId }
+    });
+
+    if (!existingProject) {
+      return NextResponse.json({ error: "Document not found or ownership missing" }, { status: 404 });
+    }
 
     const updatedProject = await prisma.project.update({
       where: { id },
       data: {
         name,
         company,
+        logoColor,
         status: status ? mapStatusToEnum(status) : undefined,
         summaryTitle,
         summaryDesc,
@@ -52,22 +74,40 @@ export async function PATCH(
 
     return NextResponse.json({ project: updatedProject });
   } catch (err: any) {
-    console.error("Backend PATCH mutation pipeline execution failure:", err);
-    return NextResponse.json({ error: err.message || "Failed to mutate document" }, { status: 500 });
+    console.error("Dynamic update transaction error:", err);
+    return NextResponse.json({ error: "Failed to update record context" }, { status: 500 });
   }
 }
 
+// 2. DELETE: Purge a specific project safely within user boundaries
 export async function DELETE(
-  req: Request, 
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized access blocked" }, { status: 401 });
+    }
+
     const { id } = await params;
-    
-    await prisma.project.delete({ where: { id } });
+
+    // Verify ownership before executing erasure code
+    const existingProject = await prisma.project.findFirst({
+      where: { id, ownerId: userId }
+    });
+
+    if (!existingProject) {
+      return NextResponse.json({ error: "Document not found or ownership missing" }, { status: 404 });
+    }
+
+    await prisma.project.delete({
+      where: { id }
+    });
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("Backend DELETE destruction trace failure:", err);
-    return NextResponse.json({ error: err.message || "Failed to drop document" }, { status: 500 });
+    console.error("Absolute document purge failure:", err);
+    return NextResponse.json({ error: "Failed to purge database entry" }, { status: 500 });
   }
 }

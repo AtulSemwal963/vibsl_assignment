@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+// FIX: Import the shared global singleton client instance to prevent connection leakage
+import prisma from '@/lib/prisma'; 
 
 export interface UpsertUserDTO {
   oauthId: string;
@@ -15,13 +14,13 @@ export const userQueries = {
       where: { oauthId: dto.oauthId },
       update: {
         name: dto.name,
-        profilePicture: dto.profilePicture,
+        profilePicture: dto.profilePicture || null,
       },
       create: {
         oauthId: dto.oauthId,
         email: dto.email,
         name: dto.name,
-        profilePicture: dto.profilePicture,
+        profilePicture: dto.profilePicture || null,
       },
     });
   },
